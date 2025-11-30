@@ -1,0 +1,99 @@
+"""
+Main entry point for the Game Boy Snake Game
+Handles game state management and screen transitions
+"""
+import pygame
+import sys
+import config
+from lobby import Lobby
+from loading_screen import LoadingScreen
+from snake_game import SnakeGame
+from game_over import GameOver
+
+# Game states
+STATE_LOBBY = "lobby"
+STATE_LOADING = "loading"
+STATE_GAME = "game"
+STATE_GAME_OVER = "game_over"
+
+def main():
+    """Main game loop"""
+    # Initialize pygame
+    pygame.init()
+    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+    pygame.display.set_caption("Game Boy Snake")
+    clock = pygame.time.Clock()
+    
+    # Initialize game states
+    current_state = STATE_LOBBY
+    lobby = Lobby(screen)
+    loading_screen = LoadingScreen(screen)
+    snake_game = None
+    game_over = None
+    
+    running = True
+    
+    while running:
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            
+            # Route events to current state
+            if current_state == STATE_LOBBY:
+                result = lobby.handle_event(event)
+                if result == "start_game":
+                    current_state = STATE_LOADING
+                    loading_screen.start()
+            
+            elif current_state == STATE_LOADING:
+                # Loading screen doesn't handle events, just wait
+                pass
+            
+            elif current_state == STATE_GAME:
+                if snake_game:
+                    snake_game.handle_event(event)
+            
+            elif current_state == STATE_GAME_OVER:
+                if game_over:
+                    result = game_over.handle_event(event)
+                    if result == "restart_game":
+                        current_state = STATE_LOADING
+                        loading_screen.start()
+                        snake_game = None  # Will be recreated after loading
+                    elif result == "return_lobby":
+                        current_state = STATE_LOBBY
+                        snake_game = None
+                        game_over = None
+        
+        # Update game state
+        if current_state == STATE_LOADING:
+            loading_screen.draw()
+            if loading_screen.is_complete():
+                current_state = STATE_GAME
+                snake_game = SnakeGame(screen)
+        
+        elif current_state == STATE_GAME:
+            if snake_game:
+                snake_game.update()
+                snake_game.draw()
+                if snake_game.is_game_over():
+                    current_state = STATE_GAME_OVER
+                    game_over = GameOver(screen, snake_game.score)
+        
+        elif current_state == STATE_GAME_OVER:
+            if game_over:
+                game_over.draw()
+        
+        elif current_state == STATE_LOBBY:
+            lobby.draw()
+        
+        # Cap frame rate
+        clock.tick(config.FPS)
+    
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
+

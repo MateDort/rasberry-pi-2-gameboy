@@ -581,81 +581,114 @@ class MarioGame:
         self.update_fireballs()
     
     def draw_mario(self):
-        """Draw Mario character"""
+        """Draw Mario character in classic pixel art style"""
         mario_rect = self.get_mario_rect()
+        base_x = mario_rect.x
+        base_y = mario_rect.y
         
         # Flash effect when invincible
         if self.mario_invincible and (self.frame_count // 5) % 2 == 0:
             return  # Skip drawing this frame
         
+        # Skin color
+        SKIN = (255, 204, 153)
+        # Brown for hair/shoes
+        BROWN = (139, 90, 43)
+        # Red for cap/shirt
+        RED = config.MARIO_RED
+        # Blue for overalls
+        BLUE = config.MARIO_BLUE
+        # Yellow for buttons
+        YELLOW = config.MARIO_YELLOW
+        
         if self.mario_state == "small":
-            # Draw small Mario
-            # Body (red)
-            body_rect = pygame.Rect(
-                mario_rect.x + 4,
-                mario_rect.y + 8,
-                16,
-                16
-            )
-            pygame.draw.rect(self.screen, config.MARIO_RED, body_rect)
+            # Small Mario - classic 16x16 style, using 2x2 pixel blocks for visibility
+            pixel_size = 2
             
-            # Head (red)
-            head_rect = pygame.Rect(
-                mario_rect.x + 4,
-                mario_rect.y,
-                16,
-                12
-            )
-            pygame.draw.rect(self.screen, config.MARIO_RED, head_rect)
+            # Cap top (red)
+            pygame.draw.rect(self.screen, RED, (base_x + 4, base_y - 8, 20, 4))
             
-            # Hat (red with blue)
-            hat_rect = pygame.Rect(
-                mario_rect.x + 2,
-                mario_rect.y - 4,
-                20,
-                8
-            )
-            pygame.draw.rect(self.screen, config.MARIO_RED, hat_rect)
-            pygame.draw.rect(self.screen, config.MARIO_BLUE, 
-                           (hat_rect.x + 4, hat_rect.y, 12, 4))
+            # Cap with blue band
+            pygame.draw.rect(self.screen, RED, (base_x + 2, base_y - 6, 24, 4))
+            pygame.draw.rect(self.screen, BLUE, (base_x + 8, base_y - 6, 16, 2))
+            
+            # Face (skin tone)
+            pygame.draw.rect(self.screen, RED, (base_x + 4, base_y - 4, 20, 2))  # Cap edge
+            pygame.draw.rect(self.screen, SKIN, (base_x + 6, base_y - 4, 16, 6))
+            
+            # Eyes (black dots)
+            pygame.draw.rect(self.screen, config.BLACK, (base_x + 8, base_y - 2, 2, 2))
+            pygame.draw.rect(self.screen, config.BLACK, (base_x + 18, base_y - 2, 2, 2))
+            
+            # Mustache (brown)
+            pygame.draw.rect(self.screen, BROWN, (base_x + 10, base_y - 1, 12, 2))
+            pygame.draw.rect(self.screen, BROWN, (base_x + 8, base_y, 16, 2))
+            
+            # Shirt (red)
+            pygame.draw.rect(self.screen, RED, (base_x + 4, base_y + 2, 20, 4))
+            
+            # Overalls (blue) with buttons
+            pygame.draw.rect(self.screen, BLUE, (base_x + 4, base_y + 6, 6, 4))  # Left strap
+            pygame.draw.rect(self.screen, BLUE, (base_x + 18, base_y + 6, 6, 4))  # Right strap
+            pygame.draw.rect(self.screen, RED, (base_x + 10, base_y + 6, 8, 4))  # Chest
+            pygame.draw.rect(self.screen, YELLOW, (base_x + 12, base_y + 7, 2, 2))  # Button 1
+            pygame.draw.rect(self.screen, YELLOW, (base_x + 16, base_y + 7, 2, 2))  # Button 2
+            
+            # Overalls body
+            pygame.draw.rect(self.screen, BLUE, (base_x + 4, base_y + 10, 20, 6))
+            
+            # Legs and shoes
+            pygame.draw.rect(self.screen, BLUE, (base_x + 6, base_y + 16, 4, 4))  # Left leg
+            pygame.draw.rect(self.screen, BLUE, (base_x + 18, base_y + 16, 4, 4))  # Right leg
+            pygame.draw.rect(self.screen, BROWN, (base_x + 8, base_y + 16, 8, 4))  # Shoes
+            pygame.draw.rect(self.screen, BROWN, (base_x + 16, base_y + 16, 8, 4))  # Shoes
         else:
-            # Draw large Mario
-            # Body (red)
-            body_rect = pygame.Rect(
-                mario_rect.x + 4,
-                mario_rect.y + 24,
-                16,
-                20
-            )
-            pygame.draw.rect(self.screen, config.MARIO_RED, body_rect)
+            # Large Mario - taller version
+            pixel_size = 2
             
-            # Head (red)
-            head_rect = pygame.Rect(
-                mario_rect.x + 4,
-                mario_rect.y + 8,
-                16,
-                16
-            )
-            pygame.draw.rect(self.screen, config.MARIO_RED, head_rect)
+            # Cap top (red)
+            pygame.draw.rect(self.screen, RED, (base_x + 4, base_y - 8, 20, 4))
             
-            # Hat
-            hat_rect = pygame.Rect(
-                mario_rect.x + 2,
-                mario_rect.y + 4,
-                20,
-                8
-            )
-            pygame.draw.rect(self.screen, config.MARIO_RED, hat_rect)
-            pygame.draw.rect(self.screen, config.MARIO_BLUE, 
-                           (hat_rect.x + 4, hat_rect.y, 12, 4))
+            # Cap with blue band
+            pygame.draw.rect(self.screen, RED, (base_x + 2, base_y - 6, 24, 4))
+            pygame.draw.rect(self.screen, BLUE, (base_x + 8, base_y - 6, 16, 2))
             
-            # Fire state indicator (orange glow)
+            # Face (skin tone) - larger
+            pygame.draw.rect(self.screen, RED, (base_x + 4, base_y - 4, 20, 2))  # Cap edge
+            pygame.draw.rect(self.screen, SKIN, (base_x + 6, base_y - 4, 16, 8))
+            
+            # Eyes (black dots)
+            pygame.draw.rect(self.screen, config.BLACK, (base_x + 8, base_y - 2, 2, 2))
+            pygame.draw.rect(self.screen, config.BLACK, (base_x + 18, base_y - 2, 2, 2))
+            
+            # Mustache (brown)
+            pygame.draw.rect(self.screen, BROWN, (base_x + 10, base_y, 12, 2))
+            pygame.draw.rect(self.screen, BROWN, (base_x + 8, base_y + 2, 16, 2))
+            
+            # Shirt (red) - taller
+            pygame.draw.rect(self.screen, RED, (base_x + 4, base_y + 4, 20, 8))
+            
+            # Overalls (blue) with buttons
+            pygame.draw.rect(self.screen, BLUE, (base_x + 4, base_y + 12, 6, 8))  # Left strap
+            pygame.draw.rect(self.screen, BLUE, (base_x + 18, base_y + 12, 6, 8))  # Right strap
+            pygame.draw.rect(self.screen, RED, (base_x + 10, base_y + 12, 8, 8))  # Chest
+            pygame.draw.rect(self.screen, YELLOW, (base_x + 12, base_y + 14, 2, 2))  # Button 1
+            pygame.draw.rect(self.screen, YELLOW, (base_x + 16, base_y + 14, 2, 2))  # Button 2
+            
+            # Overalls body - taller
+            pygame.draw.rect(self.screen, BLUE, (base_x + 4, base_y + 20, 20, 12))
+            
+            # Legs and shoes
+            pygame.draw.rect(self.screen, BLUE, (base_x + 6, base_y + 32, 4, 8))  # Left leg
+            pygame.draw.rect(self.screen, BLUE, (base_x + 18, base_y + 32, 4, 8))  # Right leg
+            pygame.draw.rect(self.screen, BROWN, (base_x + 8, base_y + 32, 8, 8))  # Shoes
+            pygame.draw.rect(self.screen, BROWN, (base_x + 16, base_y + 32, 8, 8))  # Shoes
+            
+            # Fire state indicator (orange glow around Mario)
             if self.mario_state == "fire":
                 glow_rect = pygame.Rect(
-                    mario_rect.x - 2,
-                    mario_rect.y - 2,
-                    mario_rect.width + 4,
-                    mario_rect.height + 4
+                    base_x - 4, base_y - 12,
+                    mario_rect.width + 8, mario_rect.height + 8
                 )
                 pygame.draw.rect(self.screen, config.MARIO_ORANGE, glow_rect, 2)
     
@@ -720,47 +753,89 @@ class MarioGame:
                     pygame.draw.rect(self.screen, config.MARIO_BROWN, head_rect)
     
     def draw_blocks(self):
-        """Draw blocks"""
+        """Draw blocks in classic Mario style"""
         for block in self.blocks:
             if block.get('broken', False):
                 continue
             
             block_rect = pygame.Rect(block['x'], block['y'], block['width'], block['height'])
+            x, y = block['x'], block['y']
+            size = block['width']
             
             if block['type'] == 'ground' or block['type'] == 'platform':
-                # Brown block
+                # Brown brick block with classic texture
+                # Base color
                 pygame.draw.rect(self.screen, config.MARIO_BROWN, block_rect)
-                pygame.draw.rect(self.screen, config.BLACK, block_rect, 2)
-                # Add some texture
-                for i in range(0, block['width'], 4):
-                    pygame.draw.line(self.screen, (100, 50, 0), 
-                                   (block['x'] + i, block['y']),
-                                   (block['x'] + i, block['y'] + block['height']), 1)
+                
+                # Darker brown lines for brick texture
+                # Horizontal lines
+                pygame.draw.line(self.screen, (100, 50, 0), (x, y + size // 2), (x + size, y + size // 2), 1)
+                # Vertical lines (every other block for pattern)
+                if (x // size) % 2 == 0:
+                    pygame.draw.line(self.screen, (100, 50, 0), (x + size // 2, y), (x + size // 2, y + size), 1)
+                
+                # Highlight on top
+                pygame.draw.line(self.screen, (180, 120, 60), (x, y), (x + size, y), 2)
+                # Shadow on bottom
+                pygame.draw.line(self.screen, (80, 40, 0), (x, y + size - 1), (x + size, y + size - 1), 2)
+                # Border
+                pygame.draw.rect(self.screen, config.BLACK, block_rect, 1)
             
             elif block['type'] == 'question':
                 if block.get('hit', False):
-                    # Draw as regular block after hit
+                    # Draw as regular brown block after hit
                     pygame.draw.rect(self.screen, config.MARIO_BROWN, block_rect)
-                    pygame.draw.rect(self.screen, config.BLACK, block_rect, 2)
+                    pygame.draw.line(self.screen, (100, 50, 0), (x, y + size // 2), (x + size, y + size // 2), 1)
+                    pygame.draw.line(self.screen, (180, 120, 60), (x, y), (x + size, y), 2)
+                    pygame.draw.line(self.screen, (80, 40, 0), (x, y + size - 1), (x + size, y + size - 1), 2)
+                    pygame.draw.rect(self.screen, config.BLACK, block_rect, 1)
                 else:
-                    # Yellow question block
+                    # Yellow question block with classic look
+                    # Base yellow
                     pygame.draw.rect(self.screen, config.MARIO_YELLOW, block_rect)
-                    pygame.draw.rect(self.screen, config.BLACK, block_rect, 2)
-                    # Question mark
-                    q_text = self.font_small.render("?", True, config.BLACK)
-                    q_rect = q_text.get_rect(center=block_rect.center)
-                    self.screen.blit(q_text, q_rect)
+                    
+                    # Light yellow highlight on top and left
+                    pygame.draw.line(self.screen, (255, 255, 150), (x, y), (x + size, y), 2)
+                    pygame.draw.line(self.screen, (255, 255, 150), (x, y), (x, y + size), 2)
+                    
+                    # Darker yellow shadow on bottom and right
+                    pygame.draw.line(self.screen, (200, 180, 0), (x, y + size - 1), (x + size, y + size - 1), 2)
+                    pygame.draw.line(self.screen, (200, 180, 0), (x + size - 1, y), (x + size - 1, y + size), 2)
+                    
+                    # Border
+                    pygame.draw.rect(self.screen, config.BLACK, block_rect, 1)
+                    
+                    # Question mark (pixel art style) - larger and clearer
+                    # Top curve
+                    pygame.draw.rect(self.screen, config.BLACK, (x + 10, y + 6, 4, 2))
+                    pygame.draw.rect(self.screen, config.BLACK, (x + 8, y + 8, 2, 2))
+                    pygame.draw.rect(self.screen, config.BLACK, (x + 14, y + 8, 2, 2))
+                    # Middle line
+                    pygame.draw.rect(self.screen, config.BLACK, (x + 14, y + 10, 2, 4))
+                    # Bottom curve
+                    pygame.draw.rect(self.screen, config.BLACK, (x + 10, y + 14, 4, 2))
+                    # Dot
+                    pygame.draw.rect(self.screen, config.BLACK, (x + 11, y + 18, 2, 2))
             
             elif block['type'] == 'breakable':
-                # Brown breakable block
+                # Brown breakable block with dots
                 pygame.draw.rect(self.screen, config.MARIO_BROWN, block_rect)
-                pygame.draw.rect(self.screen, config.BLACK, block_rect, 2)
-                # Add dots pattern
+                
+                # Texture lines
+                pygame.draw.line(self.screen, (100, 50, 0), (x, y + size // 2), (x + size, y + size // 2), 1)
+                pygame.draw.line(self.screen, (180, 120, 60), (x, y), (x + size, y), 2)
+                pygame.draw.line(self.screen, (80, 40, 0), (x, y + size - 1), (x + size, y + size - 1), 2)
+                
+                # Dots pattern (4 dots in a 2x2 grid)
+                dot_color = (120, 70, 30)
                 for i in range(2):
                     for j in range(2):
-                        dot_x = block['x'] + 8 + i * 8
-                        dot_y = block['y'] + 8 + j * 8
-                        pygame.draw.circle(self.screen, (100, 50, 0), (dot_x, dot_y), 2)
+                        dot_x = x + 8 + i * 16
+                        dot_y = y + 8 + j * 16
+                        pygame.draw.circle(self.screen, dot_color, (dot_x, dot_y), 3)
+                        pygame.draw.circle(self.screen, (80, 40, 0), (dot_x, dot_y), 3, 1)
+                
+                pygame.draw.rect(self.screen, config.BLACK, block_rect, 1)
     
     def draw_power_ups(self):
         """Draw power-ups"""

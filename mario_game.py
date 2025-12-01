@@ -50,6 +50,18 @@ class MarioGame:
         self.level_height = config.MARIO_LEVEL_HEIGHT
         self.level_data = self.create_level()
         
+        # Ensure level_data is valid
+        if not self.level_data or len(self.level_data) == 0:
+            # Create a minimal level if creation failed
+            tile_size = config.MARIO_SCALED_TILE_SIZE
+            width_tiles = max(10, self.level_width // tile_size)
+            height_tiles = max(10, self.level_height // tile_size)
+            self.level_data = [[0] * width_tiles for _ in range(height_tiles)]
+            # Add ground
+            ground_y = height_tiles - 1
+            for x in range(width_tiles):
+                self.level_data[ground_y][x] = 1
+        
         # Enemies
         self.enemies = []
         self.spawn_initial_enemies()
@@ -76,46 +88,76 @@ class MarioGame:
         width_tiles = self.level_width // tile_size
         height_tiles = self.level_height // tile_size
         
+        # Ensure minimum dimensions
+        if width_tiles < 10:
+            width_tiles = 10
+        if height_tiles < 10:
+            height_tiles = 10
+        
         # Initialize with empty space
         for y in range(height_tiles):
             level.append([0] * width_tiles)
         
         # Add ground platform at bottom
         ground_y = height_tiles - 3
+        # Ensure ground_y is valid
+        if ground_y < 0:
+            ground_y = height_tiles - 1
+        
         for x in range(width_tiles):
             level[ground_y][x] = 1  # Ground
-            if x % 2 == 0:
+            if x % 2 == 0 and ground_y > 0:
                 level[ground_y - 1][x] = 1  # Some ground tiles
         
-        # Add some platforms
+        # Add some platforms (ensure indices are within bounds)
         # Platform 1
-        for x in range(20, 30):
-            level[ground_y - 5][x] = 1
+        platform1_y = max(0, ground_y - 5)
+        for x in range(min(20, width_tiles), min(30, width_tiles)):
+            if x < width_tiles:
+                level[platform1_y][x] = 1
         
         # Platform 2
-        for x in range(40, 50):
-            level[ground_y - 8][x] = 1
+        platform2_y = max(0, ground_y - 8)
+        for x in range(min(40, width_tiles), min(50, width_tiles)):
+            if x < width_tiles:
+                level[platform2_y][x] = 1
         
         # Platform 3
-        for x in range(60, 75):
-            level[ground_y - 6][x] = 1
+        platform3_y = max(0, ground_y - 6)
+        for x in range(min(60, width_tiles), min(75, width_tiles)):
+            if x < width_tiles:
+                level[platform3_y][x] = 1
         
         # Add some bricks
-        for x in range(15, 18):
-            level[ground_y - 4][x] = 2
+        brick1_y = max(0, ground_y - 4)
+        for x in range(min(15, width_tiles), min(18, width_tiles)):
+            if x < width_tiles:
+                level[brick1_y][x] = 2
         
-        for x in range(35, 38):
-            level[ground_y - 9][x] = 2
+        brick2_y = max(0, ground_y - 9)
+        for x in range(min(35, width_tiles), min(38, width_tiles)):
+            if x < width_tiles:
+                level[brick2_y][x] = 2
         
-        # Add question blocks
-        level[ground_y - 5][25] = 3
-        level[ground_y - 9][45] = 3
+        # Add question blocks (ensure indices are within bounds)
+        qblock1_y = max(0, ground_y - 5)
+        qblock1_x = min(25, width_tiles - 1)
+        if qblock1_x >= 0 and qblock1_y >= 0:
+            level[qblock1_y][qblock1_x] = 3
+        
+        qblock2_y = max(0, ground_y - 9)
+        qblock2_x = min(45, width_tiles - 1)
+        if qblock2_x >= 0 and qblock2_y >= 0:
+            level[qblock2_y][qblock2_x] = 3
         
         return level
     
     def spawn_initial_enemies(self):
         """Spawn initial enemies in the level"""
         self.enemies = []
+        if not self.level_data or len(self.level_data) == 0:
+            return
+        
         tile_size = config.MARIO_SCALED_TILE_SIZE
         ground_y = (len(self.level_data) - 3) * tile_size
         
@@ -142,6 +184,9 @@ class MarioGame:
     def spawn_initial_items(self):
         """Spawn initial items (coins, power-ups)"""
         self.items = []
+        if not self.level_data or len(self.level_data) == 0:
+            return
+        
         tile_size = config.MARIO_SCALED_TILE_SIZE
         ground_y = (len(self.level_data) - 3) * tile_size
         

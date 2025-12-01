@@ -22,9 +22,22 @@ class FlappyBird:
         """Load the bird sprite image"""
         try:
             self.bird_image = pygame.image.load("characters/flappy_bird_bird.png").convert_alpha()
-            # Get the actual size of the sprite for collision detection
-            self.bird_width = self.bird_image.get_width()
-            self.bird_height = self.bird_image.get_height()
+            # Get the actual size of the sprite
+            original_width = self.bird_image.get_width()
+            original_height = self.bird_image.get_height()
+            
+            # Scale down if sprite is too large (max 60x60 pixels)
+            max_size = 60
+            if original_width > max_size or original_height > max_size:
+                scale_factor = min(max_size / original_width, max_size / original_height)
+                new_width = int(original_width * scale_factor)
+                new_height = int(original_height * scale_factor)
+                self.bird_image = pygame.transform.scale(self.bird_image, (new_width, new_height))
+                self.bird_width = new_width
+                self.bird_height = new_height
+            else:
+                self.bird_width = original_width
+                self.bird_height = original_height
         except pygame.error as e:
             print(f"Error loading bird sprite: {e}")
             # Fallback to a default size if image can't be loaded
@@ -40,9 +53,12 @@ class FlappyBird:
     
     def reset_game(self):
         """Reset the game to initial state"""
-        # Bird properties
+        # Bird properties - ensure safe starting position
         self.bird_x = config.SCREEN_WIDTH // 4
-        self.bird_y = config.SCREEN_HEIGHT // 2
+        # Start bird higher up to account for sprite size, ensure it's well above ground
+        ground_y = config.SCREEN_HEIGHT - config.GROUND_HEIGHT
+        safe_start_y = ground_y - 100  # Start 100 pixels above ground
+        self.bird_y = max(safe_start_y, config.SCREEN_HEIGHT // 2)
         self.bird_velocity = 0
         
         # Game state
@@ -130,25 +146,32 @@ class FlappyBird:
     
     def check_collisions(self):
         """Check for collisions with pipes and ground"""
-        # Ground collision
+        # Use a smaller collision box than the full sprite for more forgiving gameplay
+        # Scale down collision box to 70% of sprite size
+        collision_width = int(self.bird_width * 0.7)
+        collision_height = int(self.bird_height * 0.7)
+        
+        # Ground collision - check bottom edge of collision box
         ground_y = config.SCREEN_HEIGHT - config.GROUND_HEIGHT
-        if self.bird_y + self.bird_height // 2 >= ground_y:
+        bird_bottom = self.bird_y + collision_height // 2
+        if bird_bottom >= ground_y:
             self.game_over = True
             high_score.update_high_score(self.score, "flappy_bird")
             return
         
-        # Ceiling collision
-        if self.bird_y - self.bird_height // 2 <= 0:
+        # Ceiling collision - check top edge of collision box
+        bird_top = self.bird_y - collision_height // 2
+        if bird_top <= 0:
             self.game_over = True
             high_score.update_high_score(self.score, "flappy_bird")
             return
         
-        # Pipe collisions - use sprite dimensions
+        # Pipe collisions - use smaller collision box
         bird_rect = pygame.Rect(
-            self.bird_x - self.bird_width // 2,
-            self.bird_y - self.bird_height // 2,
-            self.bird_width,
-            self.bird_height
+            self.bird_x - collision_width // 2,
+            self.bird_y - collision_height // 2,
+            collision_width,
+            collision_height
         )
         
         for pipe in self.pipes:

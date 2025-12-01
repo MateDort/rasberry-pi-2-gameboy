@@ -84,7 +84,16 @@ def main():
                 elif current_game_type == "sudoku":
                     current_game = SudokuGame(screen)
                 elif current_game_type == "mario":
-                    current_game = MarioGame(screen)
+                    try:
+                        current_game = MarioGame(screen)
+                    except (ImportError, Exception) as e:
+                        print(f"Error initializing Mario game: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        # Set game_over immediately so we can return to lobby
+                        current_state = STATE_LOBBY
+                        current_game = None
+                        current_game_type = None
         
         elif current_state == STATE_GAME:
             if current_game:

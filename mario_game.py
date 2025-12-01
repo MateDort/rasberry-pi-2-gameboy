@@ -46,8 +46,11 @@ class MarioGame:
         self.original_cwd = os.getcwd()
         
         # Check if Mario classes are available
-        if not MARIO_AVAILABLE:
-            raise ImportError("Mario game classes are not available. Please ensure super-mario-python-master directory exists.")
+        if not MARIO_AVAILABLE or Dashboard is None or Level is None or Sound is None or Mario is None:
+            error_msg = "Mario game classes are not available. Please ensure super-mario-python-master directory exists."
+            if not os.path.exists(_mario_dir):
+                error_msg += f"\nDirectory not found at: {_mario_dir}"
+            raise ImportError(error_msg)
         
         # Use the global mario directory path
         self.mario_dir = _mario_dir

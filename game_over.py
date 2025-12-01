@@ -59,52 +59,105 @@ class GameOver:
         if self.font_large is None:
             self.initialize_fonts()
         
-        # Dark background
-        self.screen.fill(config.BLACK)
+        # 1970s style background - dark green with black border
+        self.screen.fill(config.DARK_GREEN)
         
-        # Game Over text
-        game_over_text = self.font_large.render("GAME OVER", True, config.RETRO_ORANGE)
-        game_over_rect = game_over_text.get_rect(center=(config.SCREEN_WIDTH // 2, 150))
+        # Add decorative pattern
+        for i in range(0, config.SCREEN_WIDTH + config.SCREEN_HEIGHT, 30):
+            pygame.draw.line(self.screen, (20, 60, 35), 
+                           (i, 0), (i - config.SCREEN_HEIGHT, config.SCREEN_HEIGHT), 1)
+        
+        # Draw borders
+        pygame.draw.rect(self.screen, config.BLACK, (0, 0, config.SCREEN_WIDTH, config.SCREEN_HEIGHT), 10)
+        pygame.draw.rect(self.screen, config.PURPLE, (15, 15, config.SCREEN_WIDTH - 30, config.SCREEN_HEIGHT - 30), 4)
+        
+        # Game Over text with 1970s style - outlined
+        game_over_text = self.font_large.render("GAME OVER", True, config.PURPLE)
+        game_over_rect = game_over_text.get_rect(center=(config.SCREEN_WIDTH // 2, 120))
+        # Draw black outline
+        for dx in [-3, -2, -1, 0, 1, 2, 3]:
+            for dy in [-3, -2, -1, 0, 1, 2, 3]:
+                if dx != 0 or dy != 0:
+                    outline_rect = game_over_rect.copy()
+                    outline_rect.x += dx
+                    outline_rect.y += dy
+                    outline_text = self.font_large.render("GAME OVER", True, config.BLACK)
+                    self.screen.blit(outline_text, outline_rect)
         self.screen.blit(game_over_text, game_over_rect)
         
+        # Decorative line
+        pygame.draw.line(self.screen, config.PURPLE, 
+                        (config.SCREEN_WIDTH // 2 - 200, 160), 
+                        (config.SCREEN_WIDTH // 2 + 200, 160), 3)
+        
         # Score display
-        score_y = 250
-        score_text = self.font_medium.render(f"Score: {self.final_score}", True, config.WHITE)
+        score_y = 220
+        score_text = self.font_medium.render(f"SCORE: {self.final_score}", True, config.PURPLE)
         score_rect = score_text.get_rect(center=(config.SCREEN_WIDTH // 2, score_y))
         self.screen.blit(score_text, score_rect)
         
         # High score display
-        high_score_y = score_y + 50
+        high_score_y = score_y + 60
         if self.new_high_score:
-            high_score_text = self.font_medium.render(f"NEW HIGH SCORE: {self.high_score}!", True, config.RETRO_YELLOW)
+            high_score_text = self.font_medium.render(f"NEW HIGH SCORE: {self.high_score}!", True, config.PURPLE)
+            # Add black outline for emphasis
+            outline_rect = high_score_text.get_rect(center=(config.SCREEN_WIDTH // 2, high_score_y))
+            for dx in [-2, 0, 2]:
+                for dy in [-2, 0, 2]:
+                    if dx != 0 or dy != 0:
+                        outline_pos = outline_rect.copy()
+                        outline_pos.x += dx
+                        outline_pos.y += dy
+                        outline = self.font_medium.render(f"NEW HIGH SCORE: {self.high_score}!", True, config.BLACK)
+                        self.screen.blit(outline, outline_pos)
         else:
-            high_score_text = self.font_medium.render(f"High Score: {self.high_score}", True, config.WHITE)
+            high_score_text = self.font_medium.render(f"HIGH SCORE: {self.high_score}", True, config.PURPLE)
         high_score_rect = high_score_text.get_rect(center=(config.SCREEN_WIDTH // 2, high_score_y))
         self.screen.blit(high_score_text, high_score_rect)
         
-        # Buttons
+        # Buttons with 1970s style
         button_y = high_score_y + 100
-        button_width = 200
-        button_height = 50
-        button_spacing = 50
+        button_width = 220
+        button_height = 55
+        button_spacing = 40
         
         # Restart button
         restart_x = config.SCREEN_WIDTH // 2 - button_width - button_spacing // 2
         self.restart_button = pygame.Rect(restart_x, button_y, button_width, button_height)
-        restart_color = config.RETRO_YELLOW if self.selected_button == 0 else config.RETRO_ORANGE
-        pygame.draw.rect(self.screen, restart_color, self.restart_button)
-        pygame.draw.rect(self.screen, config.WHITE, self.restart_button, 2)
-        restart_text = self.font_small.render("Restart Game", True, config.BLACK)
+        if self.selected_button == 0:
+            # Selected - purple background
+            pygame.draw.rect(self.screen, config.PURPLE, self.restart_button)
+            pygame.draw.rect(self.screen, config.BLACK, self.restart_button, 4)
+            pygame.draw.rect(self.screen, (180, 50, 255), 
+                           (self.restart_button.x + 3, self.restart_button.y + 3, 
+                            self.restart_button.width - 6, self.restart_button.height - 6), 2)
+            text_color = config.BLACK
+        else:
+            # Not selected - black border on dark green
+            pygame.draw.rect(self.screen, config.DARK_GREEN, self.restart_button)
+            pygame.draw.rect(self.screen, config.PURPLE, self.restart_button, 4)
+            text_color = config.PURPLE
+        restart_text = self.font_small.render("RESTART GAME", True, text_color)
         restart_text_rect = restart_text.get_rect(center=self.restart_button.center)
         self.screen.blit(restart_text, restart_text_rect)
         
         # Return to Lobby button
         lobby_x = config.SCREEN_WIDTH // 2 + button_spacing // 2
         self.lobby_button = pygame.Rect(lobby_x, button_y, button_width, button_height)
-        lobby_color = config.RETRO_YELLOW if self.selected_button == 1 else config.RETRO_ORANGE
-        pygame.draw.rect(self.screen, lobby_color, self.lobby_button)
-        pygame.draw.rect(self.screen, config.WHITE, self.lobby_button, 2)
-        lobby_text = self.font_small.render("Return to Lobby", True, config.BLACK)
+        if self.selected_button == 1:
+            # Selected - purple background
+            pygame.draw.rect(self.screen, config.PURPLE, self.lobby_button)
+            pygame.draw.rect(self.screen, config.BLACK, self.lobby_button, 4)
+            pygame.draw.rect(self.screen, (180, 50, 255), 
+                           (self.lobby_button.x + 3, self.lobby_button.y + 3, 
+                            self.lobby_button.width - 6, self.lobby_button.height - 6), 2)
+            text_color = config.BLACK
+        else:
+            # Not selected - black border on dark green
+            pygame.draw.rect(self.screen, config.DARK_GREEN, self.lobby_button)
+            pygame.draw.rect(self.screen, config.PURPLE, self.lobby_button, 4)
+            text_color = config.PURPLE
+        lobby_text = self.font_small.render("RETURN TO LOBBY", True, text_color)
         lobby_text_rect = lobby_text.get_rect(center=self.lobby_button.center)
         self.screen.blit(lobby_text, lobby_text_rect)
         

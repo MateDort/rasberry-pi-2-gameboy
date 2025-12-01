@@ -46,55 +46,83 @@ class Lobby:
     
     def draw(self):
         """Draw the lobby screen"""
-        # 1970s retro background - gradient effect
-        for y in range(config.SCREEN_HEIGHT):
-            # Create a gradient from brown to beige
-            ratio = y / config.SCREEN_HEIGHT
-            r = int(config.RETRO_BROWN[0] * (1 - ratio) + config.RETRO_BEIGE[0] * ratio)
-            g = int(config.RETRO_BROWN[1] * (1 - ratio) + config.RETRO_BEIGE[1] * ratio)
-            b = int(config.RETRO_BROWN[2] * (1 - ratio) + config.RETRO_BEIGE[2] * ratio)
-            pygame.draw.line(self.screen, (r, g, b), (0, y), (config.SCREEN_WIDTH, y))
+        # 1970s retro background - dark green with pattern
+        self.screen.fill(config.DARK_GREEN)
+        
+        # Add some 1970s style pattern elements
+        # Draw diagonal lines for retro effect
+        for i in range(0, config.SCREEN_WIDTH + config.SCREEN_HEIGHT, 40):
+            pygame.draw.line(self.screen, (20, 60, 35), 
+                           (i, 0), (i - config.SCREEN_HEIGHT, config.SCREEN_HEIGHT), 1)
+        
+        # Draw decorative borders
+        pygame.draw.rect(self.screen, config.BLACK, (0, 0, config.SCREEN_WIDTH, config.SCREEN_HEIGHT), 8)
+        pygame.draw.rect(self.screen, config.PURPLE, (10, 10, config.SCREEN_WIDTH - 20, config.SCREEN_HEIGHT - 20), 3)
         
         # Title
         if self.font_large is None:
             self.initialize_fonts()
         
-        title_text = self.font_large.render("GAME BOY", True, config.RETRO_ORANGE)
+        # Title with 1970s style - outlined text
+        title_text = self.font_large.render("GAME BOY", True, config.PURPLE)
         title_rect = title_text.get_rect(center=(config.SCREEN_WIDTH // 2, 100))
+        # Draw black outline
+        for dx in [-2, 0, 2]:
+            for dy in [-2, 0, 2]:
+                if dx != 0 or dy != 0:
+                    outline_rect = title_rect.copy()
+                    outline_rect.x += dx
+                    outline_rect.y += dy
+                    outline_text = self.font_large.render("GAME BOY", True, config.BLACK)
+                    self.screen.blit(outline_text, outline_rect)
         self.screen.blit(title_text, title_rect)
         
         # Subtitle
-        subtitle_text = self.font_medium.render("Select a Game", True, config.RETRO_YELLOW)
-        subtitle_rect = subtitle_text.get_rect(center=(config.SCREEN_WIDTH // 2, 150))
+        subtitle_text = self.font_medium.render("SELECT A GAME", True, config.PURPLE)
+        subtitle_rect = subtitle_text.get_rect(center=(config.SCREEN_WIDTH // 2, 160))
         self.screen.blit(subtitle_text, subtitle_rect)
         
+        # Decorative line under subtitle
+        pygame.draw.line(self.screen, config.PURPLE, 
+                        (config.SCREEN_WIDTH // 2 - 150, 180), 
+                        (config.SCREEN_WIDTH // 2 + 150, 180), 2)
+        
         # Game list
-        start_y = config.SCREEN_HEIGHT // 2 - 50
+        start_y = config.SCREEN_HEIGHT // 2 - 30
         for i, game in enumerate(self.games):
-            y_pos = start_y + i * 80
+            y_pos = start_y + i * 100
             
-            # Highlight selected game
+            # Highlight selected game with 1970s style box
             if i == self.selected_index:
-                # Draw selection box
+                # Draw selection box with retro style
                 box_rect = pygame.Rect(
-                    config.SCREEN_WIDTH // 2 - 150,
-                    y_pos - 10,
-                    300,
-                    60
+                    config.SCREEN_WIDTH // 2 - 180,
+                    y_pos - 15,
+                    360,
+                    70
                 )
-                pygame.draw.rect(self.screen, config.RETRO_ORANGE, box_rect, 3)
-                color = config.RETRO_YELLOW
+                # Purple background for selected
+                pygame.draw.rect(self.screen, config.PURPLE, box_rect)
+                pygame.draw.rect(self.screen, config.BLACK, box_rect, 4)
+                # Inner highlight
+                pygame.draw.rect(self.screen, (180, 50, 255), 
+                               (box_rect.x + 4, box_rect.y + 4, box_rect.width - 8, box_rect.height - 8), 2)
+                color = config.BLACK
             else:
-                color = config.RETRO_BEIGE
+                color = config.PURPLE
             
             # Draw game name
             game_text = self.font_medium.render(game, True, color)
             game_rect = game_text.get_rect(center=(config.SCREEN_WIDTH // 2, y_pos + 20))
             self.screen.blit(game_text, game_rect)
         
-        # Instructions
-        instruction_text = self.font_medium.render("Press ENTER or Click to Start", True, config.WHITE)
-        instruction_rect = instruction_text.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT - 100))
+        # Instructions at bottom
+        instruction_y = config.SCREEN_HEIGHT - 80
+        pygame.draw.line(self.screen, config.PURPLE, 
+                        (config.SCREEN_WIDTH // 2 - 200, instruction_y - 20), 
+                        (config.SCREEN_WIDTH // 2 + 200, instruction_y - 20), 2)
+        instruction_text = self.font_medium.render("PRESS ENTER OR CLICK TO START", True, config.PURPLE)
+        instruction_rect = instruction_text.get_rect(center=(config.SCREEN_WIDTH // 2, instruction_y))
         self.screen.blit(instruction_text, instruction_rect)
         
         pygame.display.flip()

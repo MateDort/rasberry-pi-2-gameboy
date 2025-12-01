@@ -32,6 +32,7 @@ class SnakeGame:
         self.score = 0
         self.game_over = False
         self.frame_count = 0
+        self.snake_speed = config.SNAKE_SPEED  # Start with base speed
         
     def generate_apple(self):
         """Generate a new apple position that's not on the snake"""
@@ -60,8 +61,8 @@ class SnakeGame:
         
         self.frame_count += 1
         
-        # Move snake at specified speed
-        if self.frame_count % config.SNAKE_SPEED == 0:
+        # Move snake at specified speed (use current speed, not base config speed)
+        if self.frame_count % int(self.snake_speed) == 0:
             self.direction = self.next_direction
             
             # Calculate new head position
@@ -88,6 +89,8 @@ class SnakeGame:
             # Check if apple eaten
             if new_head == self.apple:
                 self.score += 1
+                # Increase speed by 0.1 (decrease snake_speed value to make it faster)
+                self.snake_speed = max(1.0, self.snake_speed - 0.1)  # Minimum speed of 1.0
                 self.apple = self.generate_apple()
             else:
                 # Remove tail if no apple eaten
@@ -121,36 +124,16 @@ class SnakeGame:
             pygame.draw.rect(self.screen, (100, 0, 200), 
                            (x, y, config.GRID_SIZE, config.GRID_SIZE), 1)
         
-        # Draw apple (emoji)
+        # Draw apple as red rectangle
         apple_x = self.apple[0] * config.GRID_SIZE
         apple_y = self.apple[1] * config.GRID_SIZE
         
-        # Try to render apple emoji, fallback to drawing a red circle
-        try:
-            # Try using system font that might support emojis
-            import sys
-            if sys.platform == "darwin":  # macOS
-                apple_font = pygame.font.SysFont("Apple Color Emoji", config.GRID_SIZE)
-            elif sys.platform.startswith("linux"):
-                apple_font = pygame.font.SysFont("Noto Color Emoji", config.GRID_SIZE)
-            else:
-                apple_font = pygame.font.Font(None, config.GRID_SIZE)
-            
-            apple_surface = apple_font.render("🍎", True, (255, 0, 0))
-            if apple_surface.get_width() > 0:  # Check if emoji rendered
-                apple_surface = pygame.transform.scale(apple_surface, (config.GRID_SIZE, config.GRID_SIZE))
-                self.screen.blit(apple_surface, (apple_x, apple_y))
-            else:
-                raise Exception("Emoji not supported")
-        except:
-            # Fallback: draw a red circle (apple shape)
-            center_x = apple_x + config.GRID_SIZE // 2
-            center_y = apple_y + config.GRID_SIZE // 2
-            radius = config.GRID_SIZE // 2 - 2
-            pygame.draw.circle(self.screen, (255, 0, 0), (center_x, center_y), radius)
-            # Draw a small green stem
-            pygame.draw.rect(self.screen, (0, 150, 0), 
-                           (center_x - 2, apple_y + 2, 4, 6))
+        # Draw red rectangle for apple
+        pygame.draw.rect(self.screen, (255, 0, 0), 
+                        (apple_x, apple_y, config.GRID_SIZE, config.GRID_SIZE))
+        # Add border for better visibility
+        pygame.draw.rect(self.screen, (200, 0, 0), 
+                        (apple_x, apple_y, config.GRID_SIZE, config.GRID_SIZE), 1)
         
         pygame.display.flip()
     

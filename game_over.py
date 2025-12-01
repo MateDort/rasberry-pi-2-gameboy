@@ -6,10 +6,11 @@ import config
 import high_score
 
 class GameOver:
-    def __init__(self, screen, final_score):
+    def __init__(self, screen, final_score, game_name="snake"):
         self.screen = screen
         self.final_score = final_score
-        self.high_score = high_score.load_high_score()
+        self.game_name = game_name
+        self.high_score = high_score.load_high_score(game_name)
         self.new_high_score = final_score > self.high_score
         if self.new_high_score:
             self.high_score = final_score

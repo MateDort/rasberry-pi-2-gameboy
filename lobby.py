@@ -8,7 +8,7 @@ class Lobby:
     def __init__(self, screen):
         self.screen = screen
         self.selected_index = 0
-        self.games = ["SNAKE"]
+        self.games = ["SNAKE", "FLAPPY BIRD"]
         self.font_large = None
         self.font_medium = None
         self.clock = pygame.time.Clock()
@@ -31,17 +31,19 @@ class Lobby:
             elif event.key == pygame.K_DOWN:
                 self.selected_index = (self.selected_index + 1) % len(self.games)
             elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                return "start_game"
+                game_name = self.games[self.selected_index].lower().replace(" ", "_")
+                return f"start_game:{game_name}"
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # Left click
                 mouse_pos = pygame.mouse.get_pos()
                 # Check if click is on a game item
                 start_y = config.SCREEN_HEIGHT // 2 - 50
                 for i, game in enumerate(self.games):
-                    y_pos = start_y + i * 80
+                    y_pos = start_y + i * 100
                     if y_pos <= mouse_pos[1] <= y_pos + 60:
                         self.selected_index = i
-                        return "start_game"
+                        game_name = self.games[i].lower().replace(" ", "_")
+                        return f"start_game:{game_name}"
         return None
     
     def draw(self):

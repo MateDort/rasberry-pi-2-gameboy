@@ -1,5 +1,5 @@
 """
-Main entry point for the Game Boy Snake Game
+Main entry point for the Game Boy Games
 Handles game state management and screen transitions
 """
 import pygame
@@ -8,6 +8,7 @@ import config
 from lobby import Lobby
 from loading_screen import LoadingScreen
 from snake_game import SnakeGame
+from flappy_bird import FlappyBird
 from game_over import GameOver
 
 # Game states
@@ -21,14 +22,15 @@ def main():
     # Initialize pygame
     pygame.init()
     screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
-    pygame.display.set_caption("Game Boy Snake")
+    pygame.display.set_caption("Game Boy Games")
     clock = pygame.time.Clock()
     
     # Initialize game states
     current_state = STATE_LOBBY
     lobby = Lobby(screen)
     loading_screen = LoadingScreen(screen)
-    snake_game = None
+    current_game = None
+    current_game_type = None
     game_over = None
     
     running = True
@@ -42,7 +44,8 @@ def main():
             # Route events to current state
             if current_state == STATE_LOBBY:
                 result = lobby.handle_event(event)
-                if result == "start_game":
+                if result and result.startswith("start_game:"):
+                    current_game_type = result.split(":")[1]  # Get game type
                     current_state = STATE_LOADING
                     loading_screen.start()
             
@@ -51,8 +54,8 @@ def main():
                 pass
             
             elif current_state == STATE_GAME:
-                if snake_game:
-                    snake_game.handle_event(event)
+                if current_game:
+                    current_game.handle_event(event)
             
             elif current_state == STATE_GAME_OVER:
                 if game_over:
@@ -60,10 +63,11 @@ def main():
                     if result == "restart_game":
                         current_state = STATE_LOADING
                         loading_screen.start()
-                        snake_game = None  # Will be recreated after loading
+                        current_game = None  # Will be recreated after loading
                     elif result == "return_lobby":
                         current_state = STATE_LOBBY
-                        snake_game = None
+                        current_game = None
+                        current_game_type = None
                         game_over = None
         
         # Update game state
@@ -71,15 +75,18 @@ def main():
             loading_screen.draw()
             if loading_screen.is_complete():
                 current_state = STATE_GAME
-                snake_game = SnakeGame(screen)
+                if current_game_type == "snake":
+                    current_game = SnakeGame(screen)
+                elif current_game_type == "flappy_bird":
+                    current_game = FlappyBird(screen)
         
         elif current_state == STATE_GAME:
-            if snake_game:
-                snake_game.update()
-                snake_game.draw()
-                if snake_game.is_game_over():
+            if current_game:
+                current_game.update()
+                current_game.draw()
+                if current_game.is_game_over():
                     current_state = STATE_GAME_OVER
-                    game_over = GameOver(screen, snake_game.score)
+                    game_over = GameOver(screen, current_game.score, current_game_type)
         
         elif current_state == STATE_GAME_OVER:
             if game_over:

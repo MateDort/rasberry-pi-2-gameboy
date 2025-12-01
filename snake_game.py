@@ -74,7 +74,7 @@ class SnakeGame:
                 new_head[1] < 0 or new_head[1] >= config.GRID_HEIGHT):
                 self.game_over = True
                 # Update high score
-                high_score.update_high_score(self.score)
+                high_score.update_high_score(self.score, "snake")
                 return
             
             # Check self collision

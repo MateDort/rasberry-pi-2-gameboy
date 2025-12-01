@@ -9,12 +9,28 @@ import high_score
 class FlappyBird:
     def __init__(self, screen):
         self.screen = screen
+        self.bird_image = None
+        self.load_bird_sprite()
         self.reset_game()
         self.font_large = None
         self.font_medium = None
         self.font_small = None
         self.clock = pygame.time.Clock()
         self.frame_count = 0
+    
+    def load_bird_sprite(self):
+        """Load the bird sprite image"""
+        try:
+            self.bird_image = pygame.image.load("characters/flappy_bird_bird.png").convert_alpha()
+            # Get the actual size of the sprite for collision detection
+            self.bird_width = self.bird_image.get_width()
+            self.bird_height = self.bird_image.get_height()
+        except pygame.error as e:
+            print(f"Error loading bird sprite: {e}")
+            # Fallback to a default size if image can't be loaded
+            self.bird_width = 30
+            self.bird_height = 30
+            self.bird_image = None
         
     def initialize_fonts(self):
         """Initialize fonts"""
@@ -28,12 +44,10 @@ class FlappyBird:
         self.bird_x = config.SCREEN_WIDTH // 4
         self.bird_y = config.SCREEN_HEIGHT // 2
         self.bird_velocity = 0
-        self.bird_radius = 15
         
         # Game state
         self.score = 0
         self.game_over = False
-        self.paused = False
         self.frame_count = 0
         
         # Pipes
@@ -69,29 +83,17 @@ class FlappyBird:
     def handle_event(self, event):
         """Handle input events"""
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
-                if self.paused:
-                    self.paused = False
-                elif not self.game_over:
-                    # Jump/flap
-                    self.bird_velocity = -config.BIRD_JUMP_STRENGTH
-            elif event.key == pygame.K_p or event.key == pygame.K_ESCAPE:
-                if not self.game_over:
-                    self.paused = not self.paused
+            if (event.key == pygame.K_SPACE or event.key == pygame.K_UP) and not self.game_over:
+                # Jump/flap
+                self.bird_velocity = -config.BIRD_JUMP_STRENGTH
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left click
-                # Check if pause button clicked
-                pause_rect = pygame.Rect(10, 10, 40, 40)
-                if pause_rect.collidepoint(event.pos):
-                    if not self.game_over:
-                        self.paused = not self.paused
-                elif not self.paused and not self.game_over:
-                    # Jump/flap
-                    self.bird_velocity = -config.BIRD_JUMP_STRENGTH
+            if event.button == 1 and not self.game_over:  # Left click
+                # Jump/flap
+                self.bird_velocity = -config.BIRD_JUMP_STRENGTH
     
     def update(self):
         """Update game state"""
-        if self.game_over or self.paused:
+        if self.game_over:
             return
         
         self.frame_count += 1
@@ -104,8 +106,9 @@ class FlappyBird:
         for pipe in self.pipes:
             pipe['x'] -= self.pipe_speed
             
-            # Check if bird passed the pipe
-            if not pipe['passed'] and pipe['x'] + self.pipe_width < self.bird_x:
+            # Check if bird passed the pipe (using bird's left edge)
+            bird_left_edge = self.bird_x - self.bird_width // 2
+            if not pipe['passed'] and pipe['x'] + self.pipe_width < bird_left_edge:
                 pipe['passed'] = True
                 self.score += 1
         
@@ -129,23 +132,23 @@ class FlappyBird:
         """Check for collisions with pipes and ground"""
         # Ground collision
         ground_y = config.SCREEN_HEIGHT - config.GROUND_HEIGHT
-        if self.bird_y + self.bird_radius >= ground_y:
+        if self.bird_y + self.bird_height // 2 >= ground_y:
             self.game_over = True
             high_score.update_high_score(self.score, "flappy_bird")
             return
         
         # Ceiling collision
-        if self.bird_y - self.bird_radius <= 0:
+        if self.bird_y - self.bird_height // 2 <= 0:
             self.game_over = True
             high_score.update_high_score(self.score, "flappy_bird")
             return
         
-        # Pipe collisions
+        # Pipe collisions - use sprite dimensions
         bird_rect = pygame.Rect(
-            self.bird_x - self.bird_radius,
-            self.bird_y - self.bird_radius,
-            self.bird_radius * 2,
-            self.bird_radius * 2
+            self.bird_x - self.bird_width // 2,
+            self.bird_y - self.bird_height // 2,
+            self.bird_width,
+            self.bird_height
         )
         
         for pipe in self.pipes:
@@ -171,34 +174,15 @@ class FlappyBird:
                 return
     
     def draw_bird(self):
-        """Draw the bird"""
-        # Bird body (yellow circle)
-        pygame.draw.circle(self.screen, config.BIRD_YELLOW, (int(self.bird_x), int(self.bird_y)), self.bird_radius)
-        
-        # White belly (lower half)
-        belly_rect = pygame.Rect(
-            self.bird_x - self.bird_radius,
-            self.bird_y,
-            self.bird_radius * 2,
-            self.bird_radius
-        )
-        pygame.draw.ellipse(self.screen, config.WHITE, belly_rect)
-        
-        # Eyes (black)
-        eye_size = 4
-        left_eye_x = self.bird_x - 5
-        right_eye_x = self.bird_x + 5
-        eye_y = self.bird_y - 3
-        pygame.draw.circle(self.screen, config.BLACK, (int(left_eye_x), int(eye_y)), eye_size)
-        pygame.draw.circle(self.screen, config.BLACK, (int(right_eye_x), int(eye_y)), eye_size)
-        
-        # Beak (orange triangle)
-        beak_points = [
-            (self.bird_x + self.bird_radius - 2, self.bird_y),
-            (self.bird_x + self.bird_radius + 8, self.bird_y - 3),
-            (self.bird_x + self.bird_radius + 8, self.bird_y + 3)
-        ]
-        pygame.draw.polygon(self.screen, config.BIRD_ORANGE, beak_points)
+        """Draw the bird using the sprite image"""
+        if self.bird_image:
+            # Calculate position to center the sprite at bird_x, bird_y
+            bird_rect = self.bird_image.get_rect()
+            bird_rect.center = (int(self.bird_x), int(self.bird_y))
+            self.screen.blit(self.bird_image, bird_rect)
+        else:
+            # Fallback if sprite couldn't be loaded
+            pygame.draw.circle(self.screen, config.BIRD_YELLOW, (int(self.bird_x), int(self.bird_y)), 15)
     
     def draw_pipe(self, x, height, is_top):
         """Draw a pipe"""
@@ -303,30 +287,6 @@ class FlappyBird:
                     pygame.draw.rect(self.screen, color, 
                                    (stripe_x, ground_y, 20, 5))
     
-    def draw_pause_button(self):
-        """Draw the pause button"""
-        pause_rect = pygame.Rect(10, 10, 40, 40)
-        # Red square with white outline
-        pygame.draw.rect(self.screen, config.PAUSE_RED, pause_rect)
-        pygame.draw.rect(self.screen, config.WHITE, pause_rect, 2)
-        
-        # Two vertical white bars
-        bar_width = 4
-        bar_height = 20
-        bar_spacing = 6
-        center_x = pause_rect.centerx
-        center_y = pause_rect.centery
-        
-        left_bar = pygame.Rect(center_x - bar_spacing // 2 - bar_width, 
-                              center_y - bar_height // 2, 
-                              bar_width, bar_height)
-        right_bar = pygame.Rect(center_x + bar_spacing // 2, 
-                               center_y - bar_height // 2, 
-                               bar_width, bar_height)
-        
-        pygame.draw.rect(self.screen, config.WHITE, left_bar)
-        pygame.draw.rect(self.screen, config.WHITE, right_bar)
-    
     def draw(self):
         """Draw the game"""
         if self.font_medium is None:
@@ -347,27 +307,11 @@ class FlappyBird:
         if not self.game_over:
             self.draw_bird()
         
-        # Draw pause button
-        self.draw_pause_button()
-        
         # Draw score (upper right)
         score_text = self.font_medium.render(str(self.score), True, config.WHITE)
         score_rect = score_text.get_rect()
         score_rect.topright = (config.SCREEN_WIDTH - 10, 10)
         self.screen.blit(score_text, score_rect)
-        
-        # Draw pause overlay
-        if self.paused:
-            if self.font_large is None:
-                self.initialize_fonts()
-            overlay = pygame.Surface((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
-            overlay.set_alpha(128)
-            overlay.fill(config.BLACK)
-            self.screen.blit(overlay, (0, 0))
-            
-            pause_text = self.font_large.render("PAUSED", True, config.WHITE)
-            pause_rect = pause_text.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2))
-            self.screen.blit(pause_text, pause_rect)
         
         pygame.display.flip()
     

@@ -9,12 +9,33 @@ import config
 import high_score
 
 # Add the super-mario-python-master directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'super-mario-python-master'))
+# Get absolute path to super-mario-python-master
+_current_file = os.path.abspath(__file__)
+_project_dir = os.path.dirname(os.path.dirname(_current_file))
+_mario_dir = os.path.join(_project_dir, 'super-mario-python-master')
 
-from classes.Dashboard import Dashboard
-from classes.Level import Level
-from classes.Sound import Sound
-from entities.Mario import Mario
+# Add to path if it exists
+if os.path.exists(_mario_dir) and _mario_dir not in sys.path:
+    sys.path.insert(0, _mario_dir)
+
+# Try to import Mario game classes
+try:
+    from classes.Dashboard import Dashboard
+    from classes.Level import Level
+    from classes.Sound import Sound
+    from entities.Mario import Mario
+    MARIO_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Could not import Mario game classes: {e}")
+    print(f"Looking for mario directory at: {_mario_dir}")
+    print(f"Directory exists: {os.path.exists(_mario_dir)}")
+    if os.path.exists(_mario_dir):
+        print(f"Contents: {os.listdir(_mario_dir)[:10]}")
+    Dashboard = None
+    Level = None
+    Sound = None
+    Mario = None
+    MARIO_AVAILABLE = False
 
 class MarioGame:
     def __init__(self, screen):
@@ -24,15 +45,16 @@ class MarioGame:
         # Store original working directory
         self.original_cwd = os.getcwd()
         
-        # Get absolute path to super-mario-python-master directory
-        current_file = os.path.abspath(__file__)
-        project_dir = os.path.dirname(os.path.dirname(current_file))
-        mario_dir = os.path.join(project_dir, 'super-mario-python-master')
-        self.mario_dir = mario_dir
+        # Check if Mario classes are available
+        if not MARIO_AVAILABLE:
+            raise ImportError("Mario game classes are not available. Please ensure super-mario-python-master directory exists.")
+        
+        # Use the global mario directory path
+        self.mario_dir = _mario_dir
         
         # Change to super-mario-python-master directory for asset loading
-        if os.path.exists(mario_dir):
-            os.chdir(mario_dir)
+        if os.path.exists(self.mario_dir):
+            os.chdir(self.mario_dir)
         
         # Initialize game components
         try:

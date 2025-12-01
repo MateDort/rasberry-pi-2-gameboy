@@ -10,6 +10,7 @@ from loading_screen import LoadingScreen
 from snake_game import SnakeGame
 from flappy_bird import FlappyBird
 from sudoku_game import SudokuGame
+from mario_game import MarioGame
 from game_over import GameOver
 
 # Game states
@@ -82,6 +83,8 @@ def main():
                     current_game = FlappyBird(screen)
                 elif current_game_type == "sudoku":
                     current_game = SudokuGame(screen)
+                elif current_game_type == "mario":
+                    current_game = MarioGame(screen)
         
         elif current_state == STATE_GAME:
             if current_game:

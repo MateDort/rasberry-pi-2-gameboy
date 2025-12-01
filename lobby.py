@@ -8,7 +8,7 @@ class Lobby:
     def __init__(self, screen):
         self.screen = screen
         self.selected_index = 0
-        self.games = ["SNAKE", "FLAPPY BIRD", "SUDOKU"]
+        self.games = ["SNAKE", "FLAPPY BIRD", "SUDOKU", "MARIO"]
         self.font_large = None
         self.font_medium = None
         self.clock = pygame.time.Clock()

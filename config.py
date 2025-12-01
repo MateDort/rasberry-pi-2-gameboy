@@ -49,3 +49,40 @@ FONT_SIZE_LARGE = 48
 FONT_SIZE_MEDIUM = 32
 FONT_SIZE_SMALL = 24
 
+# Mario game settings
+MARIO_GRAVITY = 0.8  # Gravity strength for Mario
+MARIO_JUMP_STRENGTH = -12  # Jump velocity (negative = upward)
+MARIO_WALK_SPEED = 3  # Walking speed
+MARIO_RUN_SPEED = 5  # Running speed (with shift)
+MARIO_ACCELERATION = 0.3  # Acceleration when changing direction
+MARIO_FRICTION = 0.15  # Friction when on ground
+MARIO_AIR_FRICTION = 0.05  # Friction when in air
+MARIO_MAX_FALL_SPEED = 10  # Maximum falling speed
+
+# Mario sprite settings
+MARIO_SPRITE_SCALE = 2  # Scale factor for sprites
+MARIO_TILE_SIZE = 16  # Base tile size in pixels
+MARIO_SCALED_TILE_SIZE = MARIO_TILE_SIZE * MARIO_SPRITE_SCALE  # Scaled tile size
+
+# Mario level settings
+MARIO_LEVEL_WIDTH = 2000  # Level width in pixels
+MARIO_LEVEL_HEIGHT = 600  # Level height in pixels
+MARIO_CAMERA_OFFSET_X = 200  # Camera offset from left edge
+
+# Mario enemy settings
+KOOPA_SPEED = 1.5  # Koopa walking speed
+KOOPA_SPAWN_INTERVAL = 300  # Frames between enemy spawns (if spawning)
+
+# Mario item settings
+COIN_ANIMATION_SPEED = 0.2  # Coin animation speed
+COIN_VALUE = 100  # Points per coin
+MUSHROOM_VALUE = 1000  # Points per mushroom
+ENEMY_KILL_VALUE = 200  # Points per enemy defeated
+
+# Mario colors (fallback if sprites fail)
+MARIO_SKY_BLUE = (107, 140, 255)  # Sky color
+MARIO_GROUND_BROWN = (139, 90, 43)  # Ground color
+MARIO_BRICK_BROWN = (139, 90, 43)  # Brick color
+MARIO_MARIO_RED = (220, 20, 20)  # Mario's red color
+MARIO_MARIO_BLUE = (20, 20, 220)  # Mario's blue color
+

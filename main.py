@@ -74,7 +74,7 @@ def main():
         # Update game state
         if current_state == STATE_LOADING:
             loading_screen.draw()
-                if loading_screen.is_complete():
+            if loading_screen.is_complete():
                 current_state = STATE_GAME
                 if current_game_type == "snake":
                     current_game = SnakeGame(screen)

@@ -9,6 +9,7 @@ from lobby import Lobby
 from loading_screen import LoadingScreen
 from snake_game import SnakeGame
 from flappy_bird import FlappyBird
+from mario_game import MarioGame
 from game_over import GameOver
 
 # Game states
@@ -73,12 +74,14 @@ def main():
         # Update game state
         if current_state == STATE_LOADING:
             loading_screen.draw()
-            if loading_screen.is_complete():
+                if loading_screen.is_complete():
                 current_state = STATE_GAME
                 if current_game_type == "snake":
                     current_game = SnakeGame(screen)
                 elif current_game_type == "flappy_bird":
                     current_game = FlappyBird(screen)
+                elif current_game_type == "mario":
+                    current_game = MarioGame(screen)
         
         elif current_state == STATE_GAME:
             if current_game:

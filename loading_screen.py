@@ -35,42 +35,61 @@ class LoadingScreen:
         if self.font_large is None:
             self.initialize_fonts()
         
-        # 1970s retro background
-        for y in range(config.SCREEN_HEIGHT):
-            ratio = y / config.SCREEN_HEIGHT
-            r = int(config.RETRO_BROWN[0] * (1 - ratio) + config.RETRO_BEIGE[0] * ratio)
-            g = int(config.RETRO_BROWN[1] * (1 - ratio) + config.RETRO_BEIGE[1] * ratio)
-            b = int(config.RETRO_BROWN[2] * (1 - ratio) + config.RETRO_BEIGE[2] * ratio)
-            pygame.draw.line(self.screen, (r, g, b), (0, y), (config.SCREEN_WIDTH, y))
+        # 1970s style background - dark green with pattern
+        self.screen.fill(config.DARK_GREEN)
         
-        # Loading text
-        loading_text = self.font_large.render("LOADING", True, config.RETRO_ORANGE)
+        # Add some 1970s style pattern elements
+        # Draw diagonal lines for retro effect
+        for i in range(0, config.SCREEN_WIDTH + config.SCREEN_HEIGHT, 40):
+            pygame.draw.line(self.screen, (20, 60, 35), 
+                           (i, 0), (i - config.SCREEN_HEIGHT, config.SCREEN_HEIGHT), 1)
+        
+        # Draw decorative borders
+        pygame.draw.rect(self.screen, config.BLACK, (0, 0, config.SCREEN_WIDTH, config.SCREEN_HEIGHT), 8)
+        pygame.draw.rect(self.screen, config.PURPLE, (10, 10, config.SCREEN_WIDTH - 20, config.SCREEN_HEIGHT - 20), 3)
+        
+        # Loading text with 1970s style - outlined
+        loading_text = self.font_large.render("LOADING", True, config.PURPLE)
         loading_rect = loading_text.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2 - 50))
+        # Draw black outline
+        for dx in [-2, 0, 2]:
+            for dy in [-2, 0, 2]:
+                if dx != 0 or dy != 0:
+                    outline_rect = loading_rect.copy()
+                    outline_rect.x += dx
+                    outline_rect.y += dy
+                    outline_text = self.font_large.render("LOADING", True, config.BLACK)
+                    self.screen.blit(outline_text, outline_rect)
         self.screen.blit(loading_text, loading_rect)
         
         # Animated dots
         self.animation_frame += 1
         dots = "." * ((self.animation_frame // 10) % 4)
-        dots_text = self.font_medium.render(dots, True, config.RETRO_YELLOW)
+        dots_text = self.font_medium.render(dots, True, config.PURPLE)
         dots_rect = dots_text.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2 + 20))
         self.screen.blit(dots_text, dots_rect)
         
-        # Progress bar (retro style)
+        # Progress bar (1970s style)
         if self.start_time:
             progress = min((time.time() - self.start_time) / self.loading_duration, 1.0)
             bar_width = 400
-            bar_height = 20
+            bar_height = 25
             bar_x = (config.SCREEN_WIDTH - bar_width) // 2
             bar_y = config.SCREEN_HEIGHT // 2 + 80
             
-            # Draw bar background
+            # Draw bar background with black border
             pygame.draw.rect(self.screen, config.BLACK, (bar_x, bar_y, bar_width, bar_height))
-            pygame.draw.rect(self.screen, config.RETRO_ORANGE, (bar_x, bar_y, bar_width, bar_height), 2)
+            pygame.draw.rect(self.screen, config.PURPLE, (bar_x, bar_y, bar_width, bar_height), 3)
             
-            # Draw progress
+            # Draw progress fill in purple
             fill_width = int(bar_width * progress)
             if fill_width > 0:
-                pygame.draw.rect(self.screen, config.RETRO_YELLOW, (bar_x + 2, bar_y + 2, fill_width - 4, bar_height - 4))
+                pygame.draw.rect(self.screen, config.PURPLE, 
+                               (bar_x + 3, bar_y + 3, fill_width - 6, bar_height - 6))
+                # Add inner highlight
+                if fill_width > 6:
+                    pygame.draw.rect(self.screen, (180, 50, 255), 
+                                   (bar_x + 3, bar_y + 3, fill_width - 6, 5))
         
         pygame.display.flip()
 
